@@ -116,7 +116,7 @@ function showSection(sectionName) {
 
 function testEmail() {
     sistema.showNotification('Probando email...', 'info');
-    EmailService.sendTestEmail();
+    window.emailService.sendTestEmail();
 }
 
 function testWhatsApp() {
@@ -146,3 +146,187 @@ document.addEventListener('DOMContentLoaded', function() {
     window.sistema = new SistemaIglesia();
     console.log('✅ Sistema 100% Funcional');
 });
+
+// Funciones globales de utilidad
+window.mostrarEstadoSistema = function() {
+    const estado = {
+        sistema: window.sistema ? window.sistema.inicializado : false,
+        emailjs: !!window.EMAILJS_CONFIG,
+        backend: !!window.BACKEND_CONFIG,
+        servicios: {
+            email: !!window.emailService,
+            backend: !!window.backendService
+        }
+    };
+    
+    console.log('🏠 Estado del sistema:', estado);
+    alert(`Estado del Sistema:
+✅ Sistema: ${estado.sistema ? 'INICIALIZADO' : 'NO INICIALIZADO'}
+📧 EmailJS: ${estado.emailjs ? 'CONFIGURADO' : 'ERROR'}
+🔗 Backend: ${estado.backend ? 'CONFIGURADO' : 'ERROR'}
+🛠️ Servicios: ${estado.servicios.email && estado.servicios.backend ? 'OK' : 'ERROR'}`);
+};
+
+// Función de test de email corregida
+window.testEmail = async function() {
+    console.log('🧪 Test manual de email...');
+    
+    if (!window.emailService) {
+        alert('❌ EmailService no disponible');
+        return;
+    }
+    
+    try {
+        const result = await window.emailService.sendEmail(
+            window.IGLESIA_CONFIG.EMAIL, // Usar el email de la iglesia como destino
+            '✅ Email de prueba - Sistema Iglesia',
+            'Este es un email de prueba del sistema. Si recibes esto, EmailJS está funcionando correctamente.'
+        );
+        
+        console.log('Resultado test:', result);
+        
+        if (result.success) {
+            alert('✅ Email de prueba enviado correctamente');
+        } else {
+            alert('❌ Error enviando email: ' + result.error);
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('Error en testEmail:', error);
+        alert('❌ Error en test de email: ' + error.message);
+    }
+};
+
+// Función de test de backend
+window.testBackend = async function() {
+    console.log('🧪 Test manual de backend...');
+    
+    if (!window.backendService) {
+        alert('❌ BackendService no disponible');
+        return;
+    }
+    
+    try {
+        const result = await window.backendService.healthCheck();
+        console.log('Resultado test backend:', result);
+        
+        if (result.success) {
+            alert('✅ Backend conectado correctamente');
+        } else {
+            alert('❌ Error conectando al backend: ' + result.error);
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('Error en testBackend:', error);
+        alert('❌ Error en test de backend: ' + error.message);
+    }
+};
+
+// Función para cargar personas
+window.cargarPersonas = function() {
+    if (window.personasManager) {
+        window.personasManager.cargarPersonas();
+        // Mostrar sección de personas
+        if (window.uiManager) {
+            window.uiManager.showSection('personasSection');
+        }
+    } else {
+        alert('❌ PersonasManager no disponible');
+    }
+};
+
+console.log('🔧 Funciones globales cargadas');
+
+// Funciones globales de utilidad
+window.mostrarEstadoSistema = function() {
+    const estado = {
+        sistema: window.sistema ? window.sistema.inicializado : false,
+        emailjs: !!window.EMAILJS_CONFIG,
+        backend: !!window.BACKEND_CONFIG,
+        servicios: {
+            email: !!window.emailService,
+            backend: !!window.backendService
+        }
+    };
+    
+    console.log('🏠 Estado del sistema:', estado);
+    alert(`Estado del Sistema:
+✅ Sistema: ${estado.sistema ? 'INICIALIZADO' : 'NO INICIALIZADO'}
+📧 EmailJS: ${estado.emailjs ? 'CONFIGURADO' : 'ERROR'}
+🔗 Backend: ${estado.backend ? 'CONFIGURADO' : 'ERROR'}
+🛠️ Servicios: ${estado.servicios.email && estado.servicios.backend ? 'OK' : 'ERROR'}`);
+};
+
+// Función de test de email corregida
+window.testEmail = async function() {
+    console.log('🧪 Test manual de email...');
+    
+    if (!window.emailService) {
+        alert('❌ EmailService no disponible');
+        return;
+    }
+    
+    try {
+        const result = await window.emailService.sendEmail(
+            window.IGLESIA_CONFIG.EMAIL, // Usar el email de la iglesia como destino
+            '✅ Email de prueba - Sistema Iglesia',
+            'Este es un email de prueba del sistema. Si recibes esto, EmailJS está funcionando correctamente.'
+        );
+        
+        console.log('Resultado test:', result);
+        
+        if (result.success) {
+            alert('✅ Email de prueba enviado correctamente');
+        } else {
+            alert('❌ Error enviando email: ' + result.error);
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('Error en testEmail:', error);
+        alert('❌ Error en test de email: ' + error.message);
+    }
+};
+
+// Función de test de backend
+window.testBackend = async function() {
+    console.log('🧪 Test manual de backend...');
+    
+    if (!window.backendService) {
+        alert('❌ BackendService no disponible');
+        return;
+    }
+    
+    try {
+        const result = await window.backendService.healthCheck();
+        console.log('Resultado test backend:', result);
+        
+        if (result.success) {
+            alert('✅ Backend conectado correctamente');
+        } else {
+            alert('❌ Error conectando al backend: ' + result.error);
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('Error en testBackend:', error);
+        alert('❌ Error en test de backend: ' + error.message);
+    }
+};
+
+// Función para cargar personas
+window.cargarPersonas = function() {
+    if (window.personasManager) {
+        window.personasManager.cargarPersonas();
+        // Mostrar sección de personas
+        if (window.uiManager) {
+            window.uiManager.showSection('personasSection');
+        }
+    } else {
+        alert('❌ PersonasManager no disponible');
+    }
+};
+
+console.log('🔧 Funciones globales cargadas');

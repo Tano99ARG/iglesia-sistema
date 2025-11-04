@@ -1,4 +1,4 @@
-// Servicio de EmailJS - Usando window.EMAILJS_CONFIG
+// Servicio de EmailJS - Versión Corregida
 class EmailService {
     constructor() {
         this.initialized = false;
@@ -31,24 +31,31 @@ class EmailService {
             return { success: false, error: 'EmailJS no inicializado' };
         }
 
+        // Validar que el email de destino no esté vacío
+        if (!to || to.trim() === '') {
+            console.error('❌ Email de destino vacío');
+            return { success: false, error: 'Email de destino no puede estar vacío' };
+        }
+
         try {
             const templateParams = {
                 to_email: to,
                 subject: subject,
                 message: message,
-                from_name: window.IGLESIA_CONFIG.NOMBRE,
+                from_name: window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.NOMBRE : 'Sistema Iglesia',
                 to_name: persona ? persona.nombre : 'Usuario',
                 persona_nombre: persona ? persona.nombre : '',
                 persona_email: persona ? persona.email : '',
                 persona_telefono: persona ? persona.telefono : '',
-                iglesia_nombre: window.IGLESIA_CONFIG.NOMBRE,
-                iglesia_email: window.IGLESIA_CONFIG.EMAIL,
-                iglesia_telefono: window.IGLESIA_CONFIG.TELEFONO,
+                iglesia_nombre: window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.NOMBRE : 'Sistema Iglesia',
+                iglesia_email: window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.EMAIL : 'sistema@iglesia.com',
+                iglesia_telefono: window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.TELEFONO : '',
                 fecha: new Date().toLocaleDateString('es-ES'),
                 hora: new Date().toLocaleTimeString('es-ES')
             };
 
             console.log('📧 Enviando email a:', to);
+            console.log('📧 Template params:', templateParams);
             
             const response = await emailjs.send(
                 window.EMAILJS_CONFIG.SERVICE_ID,
@@ -66,6 +73,15 @@ class EmailService {
             };
         }
     }
+
+    // Función específica para test
+    async sendTestEmail() {
+        return await this.sendEmail(
+            window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.EMAIL : 'valentin.alvarez.gg@gmail.com',
+            '✅ Email de prueba - Sistema Iglesia',
+            'Este es un email de prueba del sistema. Si recibes esto, EmailJS está funcionando correctamente.\n\nSistema Iglesia - Casa De Dios'
+        );
+    }
 }
 
 // Instancia global
@@ -76,23 +92,4 @@ async function sendEmail(to, subject, message, persona = null) {
     return await window.emailService.sendEmail(to, subject, message, persona);
 }
 
-// Test manual
-window.testEmail = async function() {
-    console.log('🧪 Test manual de email...');
-    const result = await window.emailService.sendEmail(
-        window.IGLESIA_CONFIG.EMAIL,
-        '✅ Email de prueba - Sistema Iglesia',
-        'Este es un email de prueba del sistema.'
-    );
-    console.log('Resultado test:', result);
-    
-    if (result.success) {
-        alert('✅ Email de prueba enviado correctamente');
-    } else {
-        alert('❌ Error enviando email: ' + result.error);
-    }
-    
-    return result;
-};
-
-console.log('📧 EmailService cargado');
+console.log('📧 EmailService cargado - Versión Corregida');
