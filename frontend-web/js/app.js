@@ -77,7 +77,7 @@ class SistemaIglesia {
             `;
             container.appendChild(notification);
             
-            setTimeout(() => {
+            // setTimeout(() => {
                 if (notification.parentElement) {
                     notification.remove();
                 }
@@ -116,7 +116,7 @@ function showSection(sectionName) {
 
 function testEmail() {
     sistema.showNotification('Probando email...', 'info');
-    EmailService.sendTestEmail();
+    EmailService.// sendTestEmail();
 }
 
 function testWhatsApp() {
