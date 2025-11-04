@@ -1,8 +1,12 @@
-// Servicio de Backend - Con configuración centralizada
+// Servicio de Backend - Usando window.BACKEND_CONFIG
 class BackendService {
     constructor() {
-        this.baseURL = BACKEND_CONFIG.BASE_URL;
-        this.timeout = BACKEND_CONFIG.API_TIMEOUT;
+        if (!window.BACKEND_CONFIG) {
+            console.error('❌ BACKEND_CONFIG no está definido');
+            return;
+        }
+        this.baseURL = window.BACKEND_CONFIG.BASE_URL;
+        this.timeout = window.BACKEND_CONFIG.API_TIMEOUT;
         console.log('🔗 Backend Service iniciado:', this.baseURL);
     }
 
@@ -18,7 +22,6 @@ class BackendService {
         };
 
         try {
-            console.log('🌐 API Request:', url, config);
             const response = await fetch(url, config);
             const data = await response.json();
             
@@ -26,7 +29,6 @@ class BackendService {
                 throw new Error(data.error || `HTTP ${response.status}`);
             }
             
-            console.log('✅ API Response:', data);
             return { success: true, data };
         } catch (error) {
             console.error('❌ API Error:', error);
@@ -37,48 +39,19 @@ class BackendService {
         }
     }
 
-    // Autenticación
+    async healthCheck() {
+        return await this.request('/api/health');
+    }
+
     async login(email, password) {
-        return await this.request(BACKEND_CONFIG.ENDPOINTS.AUTH.LOGIN, {
+        return await this.request('/api/auth/login', {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
     }
 
-    async verifyToken(token) {
-        return await this.request(BACKEND_CONFIG.ENDPOINTS.AUTH.VERIFY, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-    }
-
-    // Personas CRUD
     async getPersonas() {
-        return await this.request(BACKEND_CONFIG.ENDPOINTS.PERSONAS.GET_ALL);
-    }
-
-    async createPersona(personaData) {
-        return await this.request(BACKEND_CONFIG.ENDPOINTS.PERSONAS.CREATE, {
-            method: 'POST',
-            body: JSON.stringify(personaData)
-        });
-    }
-
-    async updatePersona(id, personaData) {
-        return await this.request(`${BACKEND_CONFIG.ENDPOINTS.PERSONAS.UPDATE}/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(personaData)
-        });
-    }
-
-    async deletePersona(id) {
-        return await this.request(`${BACKEND_CONFIG.ENDPOINTS.PERSONAS.DELETE}/${id}`, {
-            method: 'DELETE'
-        });
-    }
-
-    // Health check
-    async healthCheck() {
-        return await this.request('/api/health');
+        return await this.request('/api/personas');
     }
 }
 
@@ -98,6 +71,27 @@ window.testBackend = async function() {
     }
     
     return result;
+};
+
+// Función para mostrar estado
+window.mostrarEstadoSistema = function() {
+    const estado = {
+        config: {
+            emailjs: !!window.EMAILJS_CONFIG,
+            backend: !!window.BACKEND_CONFIG,
+            iglesia: !!window.IGLESIA_CONFIG
+        },
+        servicios: {
+            email: !!window.emailService,
+            backend: !!window.backendService
+        }
+    };
+    
+    console.log('🏠 Estado del sistema:', estado);
+    alert(`Estado del Sistema:
+✅ Configuración: ${estado.config.emailjs && estado.config.backend && estado.config.iglesia ? 'OK' : 'ERROR'}
+🔗 Backend Service: ${estado.servicios.backend ? 'OK' : 'ERROR'}
+📧 Email Service: ${estado.servicios.email ? 'OK' : 'ERROR'}`);
 };
 
 console.log('🔗 BackendService cargado');

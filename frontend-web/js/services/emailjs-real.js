@@ -1,4 +1,4 @@
-// Servicio de EmailJS - Versión Corregida con Credenciales Reales
+// Servicio de EmailJS - Usando window.EMAILJS_CONFIG
 class EmailService {
     constructor() {
         this.initialized = false;
@@ -11,13 +11,15 @@ class EmailService {
             return;
         }
         
+        if (!window.EMAILJS_CONFIG) {
+            console.error('❌ EMAILJS_CONFIG no está definido');
+            return;
+        }
+        
         try {
-            // EmailJS v3+ usa init con publicKey
-            await emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+            await emailjs.init(window.EMAILJS_CONFIG.PUBLIC_KEY);
             this.initialized = true;
             console.log('✅ EmailJS inicializado correctamente');
-            console.log('📧 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
-            console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
         } catch (error) {
             console.error('❌ Error inicializando EmailJS:', error);
         }
@@ -25,8 +27,8 @@ class EmailService {
 
     async sendEmail(to, subject, message, persona = null) {
         if (!this.initialized) {
-            console.warn('⚠️ EmailJS no inicializado, intentando inicializar...');
-            await this.init();
+            console.warn('⚠️ EmailJS no inicializado');
+            return { success: false, error: 'EmailJS no inicializado' };
         }
 
         try {
@@ -34,51 +36,35 @@ class EmailService {
                 to_email: to,
                 subject: subject,
                 message: message,
-                from_name: IGLESIA_CONFIG.NOMBRE,
+                from_name: window.IGLESIA_CONFIG.NOMBRE,
                 to_name: persona ? persona.nombre : 'Usuario',
                 persona_nombre: persona ? persona.nombre : '',
                 persona_email: persona ? persona.email : '',
                 persona_telefono: persona ? persona.telefono : '',
-                iglesia_nombre: IGLESIA_CONFIG.NOMBRE,
-                iglesia_email: IGLESIA_CONFIG.EMAIL,
-                iglesia_telefono: IGLESIA_CONFIG.TELEFONO,
+                iglesia_nombre: window.IGLESIA_CONFIG.NOMBRE,
+                iglesia_email: window.IGLESIA_CONFIG.EMAIL,
+                iglesia_telefono: window.IGLESIA_CONFIG.TELEFONO,
                 fecha: new Date().toLocaleDateString('es-ES'),
                 hora: new Date().toLocaleTimeString('es-ES')
             };
 
             console.log('📧 Enviando email a:', to);
-            console.log('📧 Parámetros:', templateParams);
             
             const response = await emailjs.send(
-                EMAILJS_CONFIG.SERVICE_ID,
-                EMAILJS_CONFIG.TEMPLATE_ID,
+                window.EMAILJS_CONFIG.SERVICE_ID,
+                window.EMAILJS_CONFIG.TEMPLATE_ID,
                 templateParams
             );
             
-            console.log('✅ Email enviado correctamente:', response);
+            console.log('✅ Email enviado correctamente');
             return { success: true, data: response };
         } catch (error) {
             console.error('❌ Error enviando email:', error);
             return { 
                 success: false, 
-                error: error.text || error.message || 'Error desconocido',
-                details: error 
+                error: error.text || error.message || 'Error desconocido'
             };
         }
-    }
-
-    async sendWelcomeEmail(email, nombre) {
-        const subject = `¡Bienvenido a ${IGLESIA_CONFIG.NOMBRE}!`;
-        const message = `Hola ${nombre},\n\nTe damos la bienvenida a ${IGLESIA_CONFIG.NOMBRE}. Estamos contentos de tenerte en nuestra comunidad.\n\nBendiciones,\nEquipo ${IGLESIA_CONFIG.NOMBRE}`;
-        
-        return await this.sendEmail(email, subject, message, { nombre, email });
-    }
-
-    async sendNotification(email, nombre, tipo, detalles) {
-        const subject = `Notificación - ${IGLESIA_CONFIG.NOMBRE}`;
-        const message = `Hola ${nombre},\n\n${detalles}\n\n${IGLESIA_CONFIG.NOMBRE}`;
-        
-        return await this.sendEmail(email, subject, message, { nombre, email });
     }
 }
 
@@ -90,13 +76,13 @@ async function sendEmail(to, subject, message, persona = null) {
     return await window.emailService.sendEmail(to, subject, message, persona);
 }
 
-// Test manual (no automático)
+// Test manual
 window.testEmail = async function() {
     console.log('🧪 Test manual de email...');
     const result = await window.emailService.sendEmail(
-        IGLESIA_CONFIG.EMAIL,
+        window.IGLESIA_CONFIG.EMAIL,
         '✅ Email de prueba - Sistema Iglesia',
-        'Este es un email de prueba del sistema. Si recibes esto, EmailJS está funcionando correctamente.'
+        'Este es un email de prueba del sistema.'
     );
     console.log('Resultado test:', result);
     
@@ -109,4 +95,4 @@ window.testEmail = async function() {
     return result;
 };
 
-console.log('📧 EmailService cargado con credenciales reales');
+console.log('📧 EmailService cargado');
