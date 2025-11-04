@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Eclesiástica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+        
+        /* Estilos para la tabla de personas */
+.persona-row:hover {
+    background-color: #f8f9fa !important;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+.detalle-persona {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Mejoras visuales para las tarjetas */
+.card {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+        
+        .auth-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+        
+        .auth-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .auth-body {
+            padding: 30px;
+        }
+        
+        .auth-tabs .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -1px;
+            font-weight: 500;
+            color: #6c757d;
+            padding: 12px 20px;
+        }
+        
+        .auth-tabs .nav-link.active {
+            border-bottom: 3px solid var(--secondary-color);
+            background: transparent;
+            color: var(--secondary-color);
+        }
+        
+        .form-control {
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .btn-primary {
+            background: var(--secondary-color);
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 5px;
+            transition: all 0.3s;
+        }
+        
+        .strength-weak { background: #e74c3c; width: 25%; }
+        .strength-medium { background: #f39c12; width: 50%; }
+        .strength-strong { background: #27ae60; width: 75%; }
+        .strength-very-strong { background: #2ecc71; width: 100%; }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        .main-navbar {
+            background: var(--primary-color) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de carga -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <h4 class="mt-3 text-primary">Sistema de Gestión Eclesiástica</h4>
+        <p class="text-muted">Inicializando...</p>
+    </div>
+
+    <!-- Sección de Autenticación -->
+    <section id="authSection" class="auth-container hidden">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fas fa-church fa-3x mb-3"></i>
+                <h3>Sistema Iglesia</h3>
+                <p class="mb-0">Gestión Integral de Membresía</p>
+            </div>
+            
+            <div class="auth-body">
+                <!-- Alertas de autenticación -->
+                <div id="authAlerts"></div>
+                
+                <!-- Pestañas de Login/Registro -->
+                <ul class="nav nav-tabs auth-tabs" id="authTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button">
+                            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button">
+                            <i class="fas fa-user-plus me-2"></i>Registrarse
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content mt-4">
+                    <!-- Pestaña de Login -->
+                    <div class="tab-pane fade show active" id="login" role="tabpanel">
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="loginIdentifier" class="form-label">Email o Usuario</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="loginIdentifier" placeholder="usuario o email@ejemplo.com" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="loginPassword" class="form-label">Contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="loginPassword" placeholder="Tu contraseña" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleLoginPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">Recordar sesión</label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3" id="loginButton">
+                                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                            </button>
+                            
+                            <div class="text-center">
+                                <a href="#" class="text-decoration-none" onclick="showForgotPassword()">
+                                    ¿Olvidaste tu contraseña?
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Pestaña de Registro -->
+                    <div class="tab-pane fade" id="register" role="tabpanel">
+                        <form id="registerForm">
+                            <div class="mb-3">
+                                <label for="registerNombre" class="form-label">Nombre Completo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    <input type="text" class="form-control" id="registerNombre" placeholder="Ej: Juan Pérez" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="registerUsername" class="form-label">Nombre de Usuario</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                    <input type="text" class="form-control" id="registerUsername" placeholder="Ej: juan.perez" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="registerEmail" class="form-label">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="registerEmail" placeholder="ejemplo@email.com" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="registerTelefono" class="form-label">Teléfono</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    <input type="tel" class="form-control" id="registerTelefono" placeholder="+54 11 1234-5678">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="registerPassword" class="form-label">Contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="registerPassword" placeholder="Mínimo 8 caracteres" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleRegisterPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength strength-weak" id="passwordStrength"></div>
+                                <div class="form-text">
+                                    La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="registerConfirmPassword" class="form-label">Confirmar Contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="registerConfirmPassword" placeholder="Repite tu contraseña" required>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success w-100" id="registerButton">
+                                <i class="fas fa-user-plus me-2"></i>Crear Cuenta
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sección de Recuperación de Contraseña -->
+                <div id="forgotPasswordSection" class="hidden">
+                    <h5 class="text-center mb-4">Recuperar Contraseña</h5>
+                    <form id="forgotPasswordForm">
+                        <div class="mb-3">
+                            <label for="resetEmail" class="form-label">Email de tu cuenta</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" id="resetEmail" placeholder="email@ejemplo.com" required>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-paper-plane me-2"></i>Enviar Instrucciones
+                        </button>
+                        
+                        <div class="text-center">
+                            <a href="#" class="text-decoration-none" onclick="showLogin()">
+                                <i class="fas fa-arrow-left me-1"></i>Volver al inicio de sesión
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección Principal de la Aplicación -->
+    <section id="mainSection" class="hidden">
+        <!-- Navbar Principal -->
+        <nav class="navbar navbar-expand-lg navbar-dark main-navbar">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-church me-2"></i>
+                    <span>Sistema Iglesia</span>
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="mostrarDashboard()">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="mostrarPersonas()">
+                                <i class="fas fa-users me-1"></i>Personas
+                            </a>
+                        </li>
+                        <li class="nav-item" id="menuUsuariosItem" style="display: none;">
+                            <a class="nav-link" href="#" onclick="mostrarUsuarios()">
+                                <i class="fas fa-user-cog me-1"></i>Usuarios
+                            </a>
+                        </li>
+                        <li class="nav-item" id="menuReportesItem" style="display: none;">
+                            <a class="nav-link" href="#" onclick="mostrarReportes()">
+                                <i class="fas fa-chart-bar me-1"></i>Reportes
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i>
+                                <span id="userInfo">Usuario</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><span class="dropdown-item-text">
+                                    <small id="userRole">Rol</small>
+                                </span></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="cerrarSesion()">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Contenido Principal -->
+        <div class="container-fluid mt-4">
+            <!-- Sección Dashboard -->
+            <section id="dashboardSection">
+                <!-- Se cargará dinámicamente -->
+            </section>
+
+            <!-- Sección Personas -->
+            <section id="personasSection" class="hidden">
+                <div id="personasContainer">
+                    <!-- Se cargará dinámicamente -->
+                </div>
+            </section>
+
+            <!-- Sección Usuarios -->
+            <section id="userManagementSection" class="hidden">
+                <div id="userManagementContainer">
+                    <!-- Se cargará dinámicamente -->
+                </div>
+            </section>
+
+            <!-- Sección Reportes -->
+            <section id="reportesSection" class="hidden">
+                <div id="reportesContainer">
+                    <!-- Se cargará dinámicamente -->
+                </div>
+            </section>
+        </div>
+    </section>
+<!-- EN index.html - AGREGAR DESPUÉS DE LA SECCIÓN DE PERSONAS -->
+
+<!-- Sección Comunicaciones -->
+<section id="comunicaciones-section" class="content-section" style="display: none;">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div id="comunicaciones-content">
+                    <!-- El contenido se cargará dinámicamente por JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Sección Multimedia -->
+<section id="multimedia-section" class="content-section" style="display: none;">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div id="multimedia-content">
+                    <!-- El contenido se cargará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Sección IA Insights -->
+<section id="ia-section" class="content-section" style="display: none;">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div id="ia-content">
+                    <!-- El contenido se cargará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+   <!-- Scripts principales -->
+<script src="js/config.js"></script>
+<script src="js/auth-system.js"></script>
+<script src="js/api.js"></script>
+<script src="js/api-real.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/sistema-personas-completo.js"></script>
+<script src="js/export.js"></script>
+<script src="js/alerts.js"></script>
+<script src="js/comunicaciones.js"></script>
+<script src="js/multimedia.js"></script>
+<script src="js/ia-sistema.js"></script>
+<script src="js/app.js"></script>
+
+<!-- NUEVO: Correcciones definitivas -->
+<script src="js/correcciones-finales-definitivas.js"></script>
+
+<!-- Integración de módulos -->
+<script src="js/integracion-modulos.js"></script>
+    
+    <!-- Script de Autenticación -->
+    <script>
+        // Controlador de interfaz de autenticación
+        class AuthUIController {
+            constructor() {
+                this.initEventListeners();
+                console.log('🎨 AuthUIController inicializado');
+            }
+
+            initEventListeners() {
+                // Toggle de visibilidad de contraseñas
+                document.getElementById('toggleLoginPassword').addEventListener('click', () => {
+                    this.togglePasswordVisibility('loginPassword', 'toggleLoginPassword');
+                });
+
+                document.getElementById('toggleRegisterPassword').addEventListener('click', () => {
+                    this.togglePasswordVisibility('registerPassword', 'toggleRegisterPassword');
+                });
+
+                // Validación de fortaleza de contraseña en tiempo real
+                document.getElementById('registerPassword').addEventListener('input', (e) => {
+                    this.updatePasswordStrength(e.target.value);
+                });
+
+                // Envío de formularios
+                document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
+                document.getElementById('registerForm').addEventListener('submit', (e) => this.handleRegister(e));
+                document.getElementById('forgotPasswordForm').addEventListener('submit', (e) => this.handleForgotPassword(e));
+            }
+
+            togglePasswordVisibility(passwordFieldId, toggleButtonId) {
+                const passwordField = document.getElementById(passwordFieldId);
+                const toggleButton = document.getElementById(toggleButtonId);
+                const icon = toggleButton.querySelector('i');
+
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    passwordField.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
+            }
+
+            updatePasswordStrength(password) {
+                const strengthBar = document.getElementById('passwordStrength');
+                const strength = this.calculatePasswordStrength(password);
+                
+                strengthBar.className = 'password-strength';
+                if (password.length === 0) {
+                    strengthBar.style.width = '0%';
+                    return;
+                }
+
+                switch (strength) {
+                    case 'weak':
+                        strengthBar.classList.add('strength-weak');
+                        break;
+                    case 'medium':
+                        strengthBar.classList.add('strength-medium');
+                        break;
+                    case 'strong':
+                        strengthBar.classList.add('strength-strong');
+                        break;
+                    case 'very-strong':
+                        strengthBar.classList.add('strength-very-strong');
+                        break;
+                }
+            }
+
+            calculatePasswordStrength(password) {
+                let score = 0;
+                if (!password) return 'weak';
+
+                // Longitud
+                if (password.length >= 8) score += 1;
+                if (password.length >= 12) score += 1;
+
+                // Complejidad
+                if (/[A-Z]/.test(password)) score += 1;
+                if (/[a-z]/.test(password)) score += 1;
+                if (/[0-9]/.test(password)) score += 1;
+                if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+                if (score <= 2) return 'weak';
+                if (score <= 3) return 'medium';
+                if (score <= 5) return 'strong';
+                return 'very-strong';
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                const button = document.getElementById('loginButton');
+                const originalText = button.innerHTML;
+
+                try {
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Iniciando...';
+                    button.disabled = true;
+
+                    const identifier = document.getElementById('loginIdentifier').value;
+                    const password = document.getElementById('loginPassword').value;
+
+                    const result = window.authSystem.login(identifier, password);
+                    
+                    if (result.success) {
+                        this.showAlert('✅ Sesión iniciada correctamente', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        this.showAlert(`❌ ${result.error}`, 'danger');
+                    }
+                } catch (error) {
+                    this.showAlert('❌ Error al iniciar sesión', 'danger');
+                } finally {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            }
+
+            async handleRegister(e) {
+                e.preventDefault();
+                const button = document.getElementById('registerButton');
+                const originalText = button.innerHTML;
+
+                try {
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando cuenta...';
+                    button.disabled = true;
+
+                    const userData = {
+                        nombre: document.getElementById('registerNombre').value,
+                        username: document.getElementById('registerUsername').value,
+                        email: document.getElementById('registerEmail').value,
+                        telefono: document.getElementById('registerTelefono').value,
+                        password: document.getElementById('registerPassword').value,
+                        confirmPassword: document.getElementById('registerConfirmPassword').value
+                    };
+
+                    const result = await window.authSystem.register(userData);
+                    
+                    if (result.success) {
+                        this.showAlert(`✅ ${result.message}`, 'success');
+                        document.getElementById('registerForm').reset();
+                        document.getElementById('login-tab').click();
+                    } else {
+                        this.showAlert(`❌ ${result.error}`, 'danger');
+                    }
+                } catch (error) {
+                    this.showAlert('❌ Error al crear la cuenta', 'danger');
+                } finally {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            }
+
+            async handleForgotPassword(e) {
+                e.preventDefault();
+                const email = document.getElementById('resetEmail').value;
+                
+                const result = await window.authSystem.requestPasswordReset(email);
+                this.showAlert(`ℹ️ ${result.message}`, 'info');
+                document.getElementById('forgotPasswordForm').reset();
+            }
+
+            showAlert(message, type) {
+                const alertsContainer = document.getElementById('authAlerts');
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                alertsContainer.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 5000);
+            }
+        }
+
+        // Funciones globales para navegación de auth
+        function showLogin() {
+            document.getElementById('forgotPasswordSection').classList.add('hidden');
+            document.getElementById('authTabs').classList.remove('hidden');
+            document.getElementById('login-tab').click();
+        }
+
+        function showForgotPassword() {
+            document.getElementById('authTabs').classList.add('hidden');
+            document.getElementById('forgotPasswordSection').classList.remove('hidden');
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            window.authUI = new AuthUIController();
+            console.log('✅ Interfaz de autenticación lista');
+        });
+    </script>
+</body>
+</html>
