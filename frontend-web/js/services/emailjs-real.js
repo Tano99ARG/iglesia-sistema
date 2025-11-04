@@ -1,4 +1,4 @@
-// Servicio de EmailJS - Versión Corregida
+// Servicio de EmailJS - Versión Simplificada
 class EmailService {
     constructor() {
         this.initialized = false;
@@ -25,7 +25,7 @@ class EmailService {
         }
     }
 
-    async sendEmail(to, subject, message, persona = null) {
+    async sendEmail(to, subject, message) {
         if (!this.initialized) {
             console.warn('⚠️ EmailJS no inicializado');
             return { success: false, error: 'EmailJS no inicializado' };
@@ -38,24 +38,17 @@ class EmailService {
         }
 
         try {
+            // Parámetros MUY simples que deberían funcionar con cualquier template
             const templateParams = {
                 to_email: to,
                 subject: subject,
                 message: message,
-                from_name: window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.NOMBRE : 'Sistema Iglesia',
-                to_name: persona ? persona.nombre : 'Usuario',
-                persona_nombre: persona ? persona.nombre : '',
-                persona_email: persona ? persona.email : '',
-                persona_telefono: persona ? persona.telefono : '',
-                iglesia_nombre: window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.NOMBRE : 'Sistema Iglesia',
-                iglesia_email: window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.EMAIL : 'sistema@iglesia.com',
-                iglesia_telefono: window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.TELEFONO : '',
-                fecha: new Date().toLocaleDateString('es-ES'),
-                hora: new Date().toLocaleTimeString('es-ES')
+                from_name: 'Sistema Iglesia',
+                to_name: 'Usuario',
+                reply_to: window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.EMAIL : 'sistema@iglesia.com'
             };
 
             console.log('📧 Enviando email a:', to);
-            console.log('📧 Template params:', templateParams);
             
             const response = await emailjs.send(
                 window.EMAILJS_CONFIG.SERVICE_ID,
@@ -76,8 +69,9 @@ class EmailService {
 
     // Función específica para test
     async sendTestEmail() {
+        const testEmail = window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.EMAIL : 'valentin.alvarez.gg@gmail.com';
         return await this.sendEmail(
-            window.IGLESIA_CONFIG ? window.IGLESIA_CONFIG.EMAIL : 'valentin.alvarez.gg@gmail.com',
+            testEmail,
             '✅ Email de prueba - Sistema Iglesia',
             'Este es un email de prueba del sistema. Si recibes esto, EmailJS está funcionando correctamente.\n\nSistema Iglesia - Casa De Dios'
         );
@@ -87,9 +81,4 @@ class EmailService {
 // Instancia global
 window.emailService = new EmailService();
 
-// Función legacy para compatibilidad
-async function sendEmail(to, subject, message, persona = null) {
-    return await window.emailService.sendEmail(to, subject, message, persona);
-}
-
-console.log('📧 EmailService cargado - Versión Corregida');
+console.log('📧 EmailService cargado - Versión Simplificada');
