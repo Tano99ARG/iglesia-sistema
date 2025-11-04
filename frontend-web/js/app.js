@@ -1,148 +1,106 @@
-// 🚀 APLICACIÓN PRINCIPAL - SISTEMA IGLESIA
-class SistemaIglesia {
+// Sistema Principal - Casa De Dios
+class SistemaCasaDeDios {
     constructor() {
-        this.currentSection = 'dashboard';
-        this.personas = [];
-        this.init();
-    }
-
-    init() {
+        this.inicializado = false;
+        this.modulos = {};
         console.log('🚀 Sistema Casa De Dios - Inicializando...');
-        this.initEmailJS();
-        this.loadPersonas();
-        this.showNotification('Sistema inicializado correctamente', 'success');
     }
 
-    initEmailJS() {
+    async inicializar() {
         try {
-            emailjs.init('PXJT-sYDto3IXyn1a');
-            console.log('✅ EmailJS inicializado');
-        } catch (error) {
-            console.error('❌ Error EmailJS:', error);
-        }
-    }
-
-    async loadPersonas() {
-        try {
-            this.personas = [
-                { id: 1, nombre: 'Juan Pérez', email: 'juan@email.com', telefono: '+543517736190' },
-                { id: 2, nombre: 'María García', email: 'maria@email.com', telefono: '+543517736191' }
-            ];
-            this.updatePersonasUI();
-        } catch (error) {
-            console.log('Usando datos locales');
-            this.updatePersonasUI();
-        }
-    }
-
-    updatePersonasUI() {
-        const tbody = document.getElementById('personas-table-body');
-        const totalElement = document.getElementById('total-personas');
-        
-        if (tbody) {
-            tbody.innerHTML = this.personas.map(persona => `
-                <tr>
-                    <td>${persona.nombre}</td>
-                    <td>${persona.email}</td>
-                    <td>${persona.telefono}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="sistema.editPersona(${persona.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="sistema.deletePersona(${persona.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        if (totalElement) {
-            totalElement.textContent = this.personas.length;
-        }
-    }
-
-    showNotification(message, type = 'info') {
-        const container = document.getElementById('notifications-container');
-        if (container) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>${message}</span>
-                    <button class="btn btn-sm btn-light" onclick="this.parentElement.parentElement.remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            container.appendChild(notification);
+            // Verificar dependencias críticas
+            await this.verificarDependencias();
             
-            // setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 5000);
+            // Inicializar módulos en orden
+            await this.inicializarModulos();
+            
+            // Configurar event listeners
+            this.configurarEventListeners();
+            
+            this.inicializado = true;
+            console.log('✅ Sistema 100% Funcional');
+            
+        } catch (error) {
+            console.error('❌ Error inicializando sistema:', error);
         }
     }
 
-    editPersona(id) {
-        const persona = this.personas.find(p => p.id === id);
-        if (persona) {
-            this.showNotification(`Editando: ${persona.nombre}`, 'warning');
+    async verificarDependencias() {
+        // Verificar que EmailJS esté cargado
+        if (typeof emailjs === 'undefined') {
+            throw new Error('EmailJS no está cargado');
         }
+        
+        // Verificar configuración
+        if (typeof EMAILJS_CONFIG === 'undefined') {
+            throw new Error('Configuración no cargada');
+        }
+        
+        console.log('✅ Dependencias verificadas');
     }
 
-    deletePersona(id) {
-        const persona = this.personas.find(p => p.id === id);
-        if (persona && confirm(`¿Eliminar a ${persona.nombre}?`)) {
-            this.personas = this.personas.filter(p => p.id !== id);
-            this.updatePersonasUI();
-            this.showNotification(`${persona.nombre} eliminado`, 'success');
+    async inicializarModulos() {
+        // Inicializar servicios
+        if (window.emailService) {
+            await window.emailService.init();
         }
+        
+        if (window.backendService) {
+            const health = await window.backendService.healthCheck();
+            console.log('✅ Backend conectado:', health);
+        }
+        
+        console.log('✅ Módulos inicializados');
+    }
+
+    configurarEventListeners() {
+        // Event listeners globales
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ DOM cargado - Sistema listo');
+        });
+        
+        // Manejar errores no capturados
+        window.addEventListener('error', (event) => {
+            console.error('🚨 Error global:', event.error);
+        });
+    }
+
+    // Métodos públicos
+    getEstado() {
+        return {
+            inicializado: this.inicializado,
+            backend: !!window.backendService,
+            email: !!window.emailService,
+            config: {
+                emailjs: !!EMAILJS_CONFIG,
+                backend: !!BACKEND_CONFIG,
+                iglesia: !!IGLESIA_CONFIG
+            }
+        };
     }
 }
 
-// Funciones globales
-function showSection(sectionName) {
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.style.display = 'none';
-    });
+// Inicializar sistema cuando esté listo
+document.addEventListener('DOMContentLoaded', async () => {
+    window.sistema = new SistemaCasaDeDios();
+    await window.sistema.inicializar();
     
-    const targetSection = document.getElementById(`${sectionName}-section`);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-    }
-}
-
-function testEmail() {
-    sistema.showNotification('Probando email...', 'info');
-    EmailService.// sendTestEmail();
-}
-
-function testWhatsApp() {
-    sistema.showNotification('Abriendo WhatsApp...', 'info');
-    WhatsAppService.sendTestMessage();
-}
-
-function testBackend() {
-    sistema.showNotification('Probando backend...', 'info');
-    BackendService.testConnection();
-}
-
-function showAddPersonModal() {
-    sistema.showNotification('Agregar persona - Próximamente', 'info');
-}
-
-function openEmailComposer() {
-    sistema.showNotification('Compositor de emails - Próximamente', 'info');
-}
-
-function openWhatsAppComposer() {
-    sistema.showNotification('Compositor de WhatsApp - Próximamente', 'info');
-}
-
-// Inicializar aplicación
-document.addEventListener('DOMContentLoaded', function() {
-    window.sistema = new SistemaIglesia();
-    console.log('✅ Sistema 100% Funcional');
+    // Mostrar estado en consola
+    console.log('🏠 Estado del sistema:', window.sistema.getEstado());
 });
+
+// Funciones globales de utilidad
+window.mostrarEstadoSistema = function() {
+    if (window.sistema) {
+        const estado = window.sistema.getEstado();
+        alert(`Estado del Sistema:
+✅ Inicializado: ${estado.inicializado}
+🔗 Backend: ${estado.backend}
+📧 Email: ${estado.email}
+⚙️ Config: ${estado.config.emailjs && estado.config.backend && estado.config.iglesia ? 'OK' : 'ERROR'}`);
+    } else {
+        alert('Sistema no inicializado');
+    }
+};
+
+console.log('🔧 Sistema Casa De Dios - Script cargado');
