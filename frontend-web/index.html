@@ -22,75 +22,162 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- CONFIGURACIÓN INLINE - SIEMPRE DISPONIBLE -->
+    <!-- CONFIGURACIÓN INLINE -->
     <script>
-        // Configuración del Sistema - EmailJS
         window.EMAILJS_CONFIG = {
             SERVICE_ID: 'service_mwog2jm',
-            TEMPLATE_ID: 'template_wc3t3it',
+            TEMPLATE_ID: 'template_wc3t3it', 
             PUBLIC_KEY: 'PXJT-sYDto3IXyn1a',
             USER_ID: 'Valentin'
         };
 
-        // Configuración del Backend
         window.BACKEND_CONFIG = {
             BASE_URL: 'https://personas-backend-v2.onrender.com',
-            API_TIMEOUT: 10000,
-            ENDPOINTS: {
-                AUTH: {
-                    LOGIN: '/api/auth/login',
-                    VERIFY: '/api/auth/verify'
-                },
-                PERSONAS: {
-                    BASE: '/api/personas',
-                    GET_ALL: '/api/personas',
-                    CREATE: '/api/personas',
-                    UPDATE: '/api/personas',
-                    DELETE: '/api/personas'
-                }
-            }
+            API_TIMEOUT: 10000
         };
 
-        // Configuración de la Iglesia
         window.IGLESIA_CONFIG = {
             NOMBRE: 'Casa De Dios',
             EMAIL: 'valentin.alvarez.gg@gmail.com',
-            TELEFONO: '+543517736190',
-            DIRECCION: ''
+            TELEFONO: '+543517736190'
         };
 
-        // Configuración de WhatsApp
-        window.WHATSAPP_CONFIG = {
-            DEFAULT_PHONE: '+543517736190',
-            DEFAULT_MESSAGE: 'Hola, te contactamos desde Casa De Dios - Sistema Iglesia'
-        };
-
-        console.log('⚙️ Configuración del sistema cargada (inline)');
+        console.log('⚙️ Configuración del sistema cargada');
     </script>
     
-    <!-- Servicios -->
+    <!-- Servicios esenciales -->
     <script src="js/services/backend-real.js"></script>
     <script src="js/services/emailjs-real.js"></script>
     <script src="js/services/whatsapp-real.js"></script>
     
-    <!-- Módulos de la aplicación -->
-    <script src="js/auth-system.js"></script>
-    <script src="js/api.js"></script>
+    <!-- Módulos principales (solo los que existen) -->
+    <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/personas.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/dashboard.js"></script>
-    <script src="js/sistema-personas-completo.js"></script>
-    <script src="js/export.js"></script>
-    <script src="js/alerts.js"></script>
-    <script src="js/comunicaciones.js"></script>
-    <script src="js/multimedia.js"></script>
-    <script src="js/ia-sistema.js"></script>
-    
-    <!-- Sistema principal -->
-    <script src="js/app.js"></script>
 
-    <!-- Script de Autenticación -->
+    <!-- Script de Autenticación (inline) -->
     <script>
-        // ... (el script de auth existente se mantiene igual) ...
+        // Controlador de interfaz de autenticación
+        class AuthUIController {
+            constructor() {
+                this.initEventListeners();
+                console.log('🎨 AuthUIController inicializado');
+            }
+
+            initEventListeners() {
+                // Toggle de visibilidad de contraseñas
+                const toggleLogin = document.getElementById('toggleLoginPassword');
+                const toggleRegister = document.getElementById('toggleRegisterPassword');
+                
+                if (toggleLogin) {
+                    toggleLogin.addEventListener('click', () => {
+                        this.togglePasswordVisibility('loginPassword', 'toggleLoginPassword');
+                    });
+                }
+
+                if (toggleRegister) {
+                    toggleRegister.addEventListener('click', () => {
+                        this.togglePasswordVisibility('registerPassword', 'toggleRegisterPassword');
+                    });
+                }
+
+                // Envío de formularios
+                const loginForm = document.getElementById('loginForm');
+                const registerForm = document.getElementById('registerForm');
+                
+                if (loginForm) {
+                    loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+                }
+                if (registerForm) {
+                    registerForm.addEventListener('submit', (e) => this.handleRegister(e));
+                }
+            }
+
+            togglePasswordVisibility(passwordFieldId, toggleButtonId) {
+                const passwordField = document.getElementById(passwordFieldId);
+                const toggleButton = document.getElementById(toggleButtonId);
+                if (!passwordField || !toggleButton) return;
+
+                const icon = toggleButton.querySelector('i');
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    passwordField.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                const button = document.getElementById('loginButton');
+                if (!button) return;
+
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Iniciando...';
+                button.disabled = true;
+
+                try {
+                    const identifier = document.getElementById('loginIdentifier').value;
+                    const password = document.getElementById('loginPassword').value;
+
+                    // Simular login por ahora
+                    if (identifier && password) {
+                        this.showAlert('✅ Inicio de sesión simulado correctamente', 'success');
+                        setTimeout(() => {
+                            document.getElementById('authSection').classList.add('hidden');
+                            document.getElementById('mainSection').classList.remove('hidden');
+                        }, 1000);
+                    } else {
+                        this.showAlert('❌ Por favor completa todos los campos', 'danger');
+                    }
+                } catch (error) {
+                    this.showAlert('❌ Error al iniciar sesión', 'danger');
+                } finally {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            }
+
+            async handleRegister(e) {
+                e.preventDefault();
+                this.showAlert('✅ Registro simulado correctamente', 'success');
+            }
+
+            showAlert(message, type) {
+                const alertsContainer = document.getElementById('authAlerts');
+                if (!alertsContainer) return;
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+                alertsContainer.appendChild(alertDiv);
+                
+                setTimeout(() => alertDiv.remove(), 5000);
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            window.authUI = new AuthUIController();
+        });
+
+        // Funciones globales para navegación
+        function showLogin() {
+            const forgotSection = document.getElementById('forgotPasswordSection');
+            const authTabs = document.getElementById('authTabs');
+            if (forgotSection) forgotSection.classList.add('hidden');
+            if (authTabs) authTabs.classList.remove('hidden');
+        }
+
+        function showForgotPassword() {
+            const forgotSection = document.getElementById('forgotPasswordSection');
+            const authTabs = document.getElementById('authTabs');
+            if (forgotSection) forgotSection.classList.remove('hidden');
+            if (authTabs) authTabs.classList.add('hidden');
+        }
     </script>
 </body>
 </html>
